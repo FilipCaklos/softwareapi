@@ -1,0 +1,20 @@
+{
+  "appId": "com.subscriptionservice.app",
+  "productName": "Subscription Service",
+  "files": [
+    "build/**/*",
+    "node_modules/**/*",
+    "public/electron.js"
+  ],
+  "directories": {
+    "buildResources": "public"
+  },
+  "publish": null,
+  "win": {
+    "target": [
+      "portable"
+    ],
+    "certificateFile": null,
+    "sign": null
+  }
+}
