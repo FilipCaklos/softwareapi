@@ -1,9 +1,7 @@
-import axios from 'axios';
-
-const API_URL = process.env.API_URL || 'http://localhost:5000';
+import { getAccountByEmail, verifyPassword, getDaysRemaining } from './_db.js';
 
 /**
- * Vercel Serverless Function - Login
+ * Vercel Serverless Function - Login (Standalone)
  * POST /api/login
  * Body: { email, password }
  */
@@ -40,19 +38,38 @@ export default async function handler(req, res) {
       });
     }
 
-    // Call the main API service
-    const response = await axios.post(`${API_URL}/api/auth/login`, {
-      email,
-      password
-    });
+    // Find user by email
+    const account = getAccountByEmail(email);
 
-    res.status(200).json(response.data);
+    if (!account) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Verify password
+    if (!verifyPassword(account.password, password)) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Calculate days remaining
+    const daysRemaining = getDaysRemaining(account.expiryDate);
+    const status = daysRemaining > 0 ? 'active' : 'expired';
+
+    res.status(200).json({
+      success: true,
+      userId: account.userId,
+      email: account.email,
+      daysRemaining,
+      expiryDate: account.expiryDate,
+      status
+    });
   } catch (error) {
     console.error('Error during login:', error.message);
-
-    if (error.response) {
-      return res.status(error.response.status).json(error.response.data);
-    }
 
     res.status(500).json({
       success: false,

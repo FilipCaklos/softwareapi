@@ -1,9 +1,7 @@
-import axios from 'axios';
-
-const API_URL = process.env.API_URL || 'http://localhost:5000';
+import { getAccountById, getDaysRemaining } from './_db.js';
 
 /**
- * Vercel Serverless Function - Get Subscription
+ * Vercel Serverless Function - Get Subscription (Standalone)
  * GET /api/subscription?userId=<userId>
  */
 export default async function handler(req, res) {
@@ -39,16 +37,31 @@ export default async function handler(req, res) {
       });
     }
 
-    // Call the main API service
-    const response = await axios.get(`${API_URL}/api/subscription/${userId}`);
+    // Get account from database
+    const account = getAccountById(userId);
 
-    res.status(200).json(response.data);
+    if (!account) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Calculate days remaining
+    const daysRemaining = getDaysRemaining(account.expiryDate);
+    const status = daysRemaining > 0 ? 'active' : 'expired';
+
+    res.status(200).json({
+      success: true,
+      userId: account.userId,
+      email: account.email,
+      daysRemaining,
+      expiryDate: account.expiryDate,
+      status,
+      createdAt: account.createdAt
+    });
   } catch (error) {
     console.error('Error fetching subscription:', error.message);
-
-    if (error.response) {
-      return res.status(error.response.status).json(error.response.data);
-    }
 
     res.status(500).json({
       success: false,

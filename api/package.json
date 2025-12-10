@@ -1,11 +1,9 @@
 {
   "name": "subscription-service-api",
   "version": "1.0.0",
-  "description": "Vercel serverless functions for subscription service",
+  "description": "Vercel serverless functions for subscription service - Standalone",
   "main": "index.js",
-  "dependencies": {
-    "axios": "^1.6.0"
-  },
+  "type": "module",
   "engines": {
     "node": "20.x"
   }
